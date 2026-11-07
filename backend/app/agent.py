@@ -4,7 +4,7 @@ from typing import Protocol
 
 from app.learning import LearningEngine
 from app.repository import CRMRepository
-from app.responses import ApplicantProfile, generate_cover_letter, ResponseContext
+from app.responses import ApplicantProfile, ResponseContext, generate_cover_letter
 from app.scoring import CandidateProfile, Vacancy, score_vacancy
 
 

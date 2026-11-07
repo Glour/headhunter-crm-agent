@@ -99,5 +99,7 @@ if [[ "$blocked_external_submit" == "1" ]]; then
   echo "HH chat replies: external submit blocked (--external-submit); set HH_CHAT_REPLY_SEND=1 and HH_CHAT_REPLY_ALLOW_LIVE_SEND=1" >&2
 fi
 
-cmd+=("${caller_args[@]}")
+if [[ ${caller_args[0]+set} == set ]]; then
+  cmd+=("${caller_args[@]}")
+fi
 exec "${cmd[@]}"

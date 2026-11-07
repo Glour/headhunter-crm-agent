@@ -4,7 +4,6 @@ import httpx
 
 from app.hh_vacancy import HHPublicVacancyClient, extract_hh_vacancy_id, parse_hh_vacancy_html
 
-
 SAMPLE_HH_VACANCY_HTML = """
 <html>
 <head>

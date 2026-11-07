@@ -33,10 +33,12 @@ __hh_override_names=(
   HH_CHAT_REPLY_STATE_FILE
   HH_CHAT_REPLY_PYTHON
 )
-declare -A __hh_overrides=()
+__hh_override_keys=(__sentinel)
+__hh_override_values=('')
 for __hh_key in "${__hh_override_names[@]}"; do
-  if [[ -v "$__hh_key" ]]; then
-    __hh_overrides[$__hh_key]="${!__hh_key}"
+  if declare -p "$__hh_key" >/dev/null 2>&1; then
+    __hh_override_keys+=("$__hh_key")
+    __hh_override_values+=("${!__hh_key}")
   fi
 done
 
@@ -48,10 +50,14 @@ if [[ -f "$SECRETS_FILE" ]]; then
   set +a
 fi
 
-for __hh_key in "${!__hh_overrides[@]}"; do
-  export "$__hh_key=${__hh_overrides[$__hh_key]}"
+__hh_index=0
+for __hh_key in "${__hh_override_keys[@]}"; do
+  if [[ "$__hh_index" -gt 0 ]]; then
+    export "$__hh_key=${__hh_override_values[$__hh_index]}"
+  fi
+  __hh_index=$((__hh_index + 1))
 done
-unset __hh_key __hh_overrides __hh_override_names
+unset __hh_key __hh_index __hh_override_keys __hh_override_values __hh_override_names
 
 export PYTHONPATH="${PYTHONPATH:-backend}"
 export HH_CRM_DB_PATH="${HH_CRM_DB_PATH:-./data/hh_crm.sqlite3}"

@@ -16,8 +16,8 @@ from app.telegram_agent import (
     TelegramReviewSettings,
     deliver_startup_messages,
     format_help_message,
-    is_configured_telegram_chat_id,
     format_vacancy_message,
+    is_configured_telegram_chat_id,
     register_command_menu,
     telegram_command_menu,
 )

@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>HeadHunter CRM — демо</title>
+  <style>
+    :root { font: 16px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: #17213a; background: #f4f6fb; }
+    * { box-sizing: border-box; }
+    body { margin: 0; }
+    header { background: #111d35; color: #fff; padding: 2rem max(1.25rem, calc((100% - 1060px) / 2)); }
+    .brand { margin: 0 0 1.1rem; color: #aab9d7; font-size: .82rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+    h1 { font-size: clamp(1.7rem, 4vw, 2.5rem); line-height: 1.15; margin: 0; }
+    header p { color: #c2cce0; margin-bottom: 0; max-width: 650px; }
+    main { max-width: 1100px; margin: 0 auto; padding: 1.5rem 1.25rem 3rem; }
+    .notice { background: #eaf1ff; color: #264d91; border-radius: 10px; padding: .9rem 1rem; font-size: .9rem; }
+    .summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin: 1.5rem 0 2rem; }
+    .metric, article { background: #fff; border: 1px solid #e1e6ef; border-radius: 12px; box-shadow: 0 4px 18px #20315008; }
+    .metric { padding: 1rem 1.2rem; }
+    .metric span { display: block; color: #65738a; font-size: .85rem; }
+    .metric strong { font-size: 1.65rem; }
+    .toolbar { display: flex; align-items: end; justify-content: space-between; flex-wrap: wrap; gap: 1rem; }
+    .toolbar h2 { margin: 0; font-size: 1.25rem; }
+    .toolbar p { margin: .2rem 0 0; color: #65738a; font-size: .9rem; }
+    label { display: block; color: #65738a; font-size: .8rem; font-weight: 600; }
+    select { color: #17213a; background: #fff; border: 1px solid #cbd5e4; border-radius: 8px; font: inherit; padding: .55rem .75rem; min-width: 165px; }
+    article { padding: 1.25rem; margin-top: 1rem; }
+    .card-head { display: flex; justify-content: space-between; gap: 1rem; align-items: flex-start; }
+    .card-head h3 { font-size: 1.05rem; margin: 0; }
+    .company { color: #65738a; font-size: .9rem; margin: .2rem 0 0; }
+    .score { text-align: right; white-space: nowrap; color: #315ed4; font-weight: 700; }
+    .score small { color: #65738a; display: block; font-size: .76rem; font-weight: 500; }
+    .description { margin: 1rem 0; color: #43516b; }
+    details { border-top: 1px solid #edf0f5; padding-top: .75rem; font-size: .9rem; }
+    summary { color: #315ed4; cursor: pointer; font-weight: 600; }
+    ul { color: #53627a; margin-bottom: 0; padding-left: 1.2rem; }
+    .empty { color: #65738a; padding: 2rem 0; }
+    @media (max-width: 600px) { .summary { gap: .5rem; } .metric { padding: .8rem; } .metric strong { font-size: 1.35rem; } .card-head { flex-direction: column; } .score { text-align: left; } }
+  </style>
+</head>
+<body>
+  <header>
+    <p class="brand">HeadHunter CRM · демонстрация</p>
+    <h1>Вакансии под контролем</h1>
+    <p>Оценка соответствия профилю, причины решения и единый список для дальнейшей работы.</p>
+  </header>
+  <main>
+    <div class="notice"><strong>Демонстрационные данные.</strong> Все компании и вакансии вымышлены. Поиск и отправка откликов отключены, временная база удаляется при остановке.</div>
+    <div class="summary" aria-label="Сводка">
+      <div class="metric"><span>Всего вакансий</span><strong id="total">—</strong></div>
+      <div class="metric"><span>Подходят</span><strong id="hot">—</strong></div>
+      <div class="metric"><span>На проверку</span><strong id="review">—</strong></div>
+    </div>
+    <div class="toolbar">
+      <div><h2>Вакансии</h2><p>Результаты детерминированной оценки</p></div>
+      <div><label for="filter">Решение</label><select id="filter"><option value="">Все вакансии</option><option value="hot">Подходят</option><option value="review">На проверку</option><option value="maybe">Возможно</option><option value="archive">Архив</option></select></div>
+    </div>
+    <section id="vacancies" aria-live="polite"><p class="empty">Загрузка…</p></section>
+  </main>
+  <script>
+    const container = document.querySelector('#vacancies');
+    const filter = document.querySelector('#filter');
+    const labels = {hot: 'Подходит', review: 'На проверку', maybe: 'Возможно', archive: 'Архив'};
+    const reasonLabels = {
+      'skill match:': 'Совпадает навык:',
+      'role fit:': 'Подходит роль:',
+      'preferred keyword:': 'Предпочтение:',
+      'salary >= target:': 'Зарплата от цели:',
+      'salary flexible remote:': 'Зарплата при удалённой работе:',
+      'salary below comfort but workable:': 'Зарплата ниже желаемой:',
+      'salary below target:': 'Зарплата ниже цели:',
+      'salary slightly below target:': 'Зарплата немного ниже цели:',
+      'learned preference:': 'Предпочтение по обратной связи:',
+      'learned penalty:': 'Ограничение по обратной связи:'
+    };
+    let vacancies = [];
+
+    function describeReason(reason) {
+      if (reason === 'remote/удалёнка') return 'Удалённая работа';
+      for (const [prefix, label] of Object.entries(reasonLabels)) {
+        if (reason.startsWith(prefix)) return label + reason.slice(prefix.length);
+      }
+      return reason;
+    }
+
+    function render() {
+      container.replaceChildren();
+      const visible = vacancies.filter(vacancy => !filter.value || vacancy.decision === filter.value);
+      if (!visible.length) {
+        const empty = document.createElement('p');
+        empty.className = 'empty';
+        empty.textContent = 'Нет вакансий в этой категории.';
+        container.append(empty);
+      }
+      for (const vacancy of visible) {
+        const card = document.createElement('article');
+        const head = document.createElement('div'); head.className = 'card-head';
+        const heading = document.createElement('div');
+        const title = document.createElement('h3'); title.textContent = vacancy.title;
+        const company = document.createElement('p'); company.className = 'company'; company.textContent = vacancy.company;
+        heading.append(title, company);
+        const score = document.createElement('div'); score.className = 'score'; score.textContent = `${vacancy.score} / 100`;
+        const decision = document.createElement('small'); decision.textContent = labels[vacancy.decision] || vacancy.decision;
+        score.append(decision); head.append(heading, score); card.append(head);
+        const description = document.createElement('p'); description.className = 'description'; description.textContent = vacancy.description; card.append(description);
+        const reasons = [...new Set([...vacancy.score_reasons, ...vacancy.score_penalties])];
+        if (reasons.length) {
+          const details = document.createElement('details');
+          const summary = document.createElement('summary'); summary.textContent = 'Почему такая оценка'; details.append(summary);
+          const list = document.createElement('ul');
+          for (const reason of reasons) { const item = document.createElement('li'); item.textContent = describeReason(reason); list.append(item); }
+          details.append(list); card.append(details);
+        }
+        container.append(card);
+      }
+    }
+    filter.addEventListener('change', render);
+    fetch('/api/vacancies').then(response => {
+      if (!response.ok) throw new Error('Vacancies unavailable');
+      return response.json();
+    }).then(data => {
+      vacancies = data;
+      document.querySelector('#total').textContent = vacancies.length;
+      document.querySelector('#hot').textContent = vacancies.filter(v => v.decision === 'hot').length;
+      document.querySelector('#review').textContent = vacancies.filter(v => v.decision === 'review').length;
+      render();
+    }).catch(() => { container.textContent = 'Не удалось загрузить вакансии.'; });
+  </script>
+</body>
+</html>

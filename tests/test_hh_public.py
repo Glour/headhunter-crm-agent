@@ -4,7 +4,6 @@ import httpx
 
 from app.hh_public import HHPublicSearchClient, parse_hh_search_html
 
-
 SAMPLE_VACANCY_HTML = """
 <html><head>
 <title>Вакансия Full-stack разработчик / AI-first engineer в Москве, работа в компании ООО AgentCo</title>

@@ -6,8 +6,8 @@ from pathlib import Path
 from typing import Any
 
 from app.db import connect, initialize_database
-from app.responses import sanitize_cover_letter
 from app.scoring import ScoreResult, Vacancy
+from app.text_cleaning import sanitize_cover_letter
 
 
 def _json(data: Any) -> str:

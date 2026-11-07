@@ -6,7 +6,10 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from app.scoring import Vacancy
-
+from app.text_cleaning import COVER_LETTER_TYPOGRAPHY_TRANSLATION
+from app.text_cleaning import GENERATED_PHRASE_REPLACEMENTS as GENERATED_PHRASE_REPLACEMENTS
+from app.text_cleaning import sanitize_cover_letter as sanitize_cover_letter
+from app.text_cleaning import sanitize_cover_letter_greeting as sanitize_cover_letter_greeting
 
 DEFAULT_COVER_LETTER_METHODOLOGY_PATH = Path(__file__).resolve().parents[2] / "docs" / "cover-letter-methodology.md"
 BUILTIN_COVER_LETTER_METHODOLOGY = """# HH cover-letter methodology
@@ -251,25 +254,9 @@ ANTI_AI_PARTICIPLE_RE = re.compile(
 )
 EMOJI_RE = re.compile("[\U0001F300-\U0001FAFF]")
 FORBIDDEN_COVER_LETTER_TYPOGRAPHY = {"—", "–", "«", "»"}
-COVER_LETTER_TYPOGRAPHY_TRANSLATION = str.maketrans(
-    {
-        "—": "-",
-        "–": "-",
-        "«": '"',
-        "»": '"',
-    }
-)
 DEPLOY_WORD_RE = re.compile(r"\b(?:депло[а-яё]*|задепло[а-яё]*|deploy[a-z-]*)\b", re.IGNORECASE)
 RUSSIAN_CONTOUR_RE = re.compile(r"\bконтур[а-яё]*\b", re.IGNORECASE)
 AWKWARD_AROUND_RE = re.compile(r"\bвокруг\s+(?:продуктов\w+|самостоятельн\w+|[а-яё]+(?:\s+[а-яё]+){0,3})", re.IGNORECASE)
-GENERATED_PHRASE_REPLACEMENTS = [
-    (re.compile(r"\bчеловек\s+в\s+контуре\b", re.IGNORECASE), "human-in-the-loop"),
-    (re.compile(r"\bпроверяем(?:ый|ого|ому|ым|ом)?\s+контур[а-яё]*\b", re.IGNORECASE), "проверяемую систему"),
-    (re.compile(r"\bрабоч(?:ий|его|ему|им|ем)?\s+контур[а-яё]*\b", re.IGNORECASE), "рабочую систему"),
-    (re.compile(r"\bproduction-контур[а-яё]*\b", re.IGNORECASE), "production-системы"),
-    (re.compile(r"\bагентн(?:ый|ые|ых|ым|ыми|ом)?\s+контур[а-яё]*\b", re.IGNORECASE), "агентные системы"),
-    (re.compile(r"\bконтур[а-яё]*\b", re.IGNORECASE), "система"),
-]
 URL_RE = re.compile(r"https?://[^\s),;]+", re.IGNORECASE)
 GITHUB_URL_RE = re.compile(r"https?://(?:www\.)?github\.com/[^\s),;]+", re.IGNORECASE)
 EXTRA_PROOF_SECTION_HEADING_RE = re.compile(
@@ -1686,35 +1673,10 @@ def _usefulness_sentence(vacancy: Vacancy, focus: list[str], portfolio_sentence:
     return f"{base}\n{portfolio_sentence}" if portfolio_sentence else base
 
 
-_LEGACY_GREETING_WITH_ADDRESSEE_RE = re.compile(r"^\s*Здравствуйте\s*,\s*.{1,180}?[!.]\s*", re.IGNORECASE | re.DOTALL)
 
 
-def sanitize_cover_letter_greeting(message: str) -> str:
-    """Enforce the HH rule: greet with plain `Здравствуйте!`, never with employer/company names."""
-    text = (message or "").strip()
-    if not text:
-        return ""
-    if text.startswith("Здравствуйте!"):
-        return text
-
-    match = _LEGACY_GREETING_WITH_ADDRESSEE_RE.match(text)
-    if match:
-        rest = text[match.end() :].lstrip()
-        return ("Здравствуйте!" + (f" {rest}" if rest else "")).strip()
-
-    if re.match(r"^\s*Здравствуйте\b", text, flags=re.IGNORECASE):
-        rest = re.sub(r"^\s*Здравствуйте\b[\s,!.:;—-]*", "", text, count=1, flags=re.IGNORECASE).lstrip()
-        return ("Здравствуйте!" + (f" {rest}" if rest else "")).strip()
-
-    return text
 
 
-def sanitize_cover_letter(message: str) -> str:
-    text = sanitize_cover_letter_greeting(message)
-    text = text.translate(COVER_LETTER_TYPOGRAPHY_TRANSLATION)
-    for pattern, replacement in GENERATED_PHRASE_REPLACEMENTS:
-        text = pattern.sub(replacement, text)
-    return text
 
 
 def generate_cover_letter(context: ResponseContext) -> GeneratedResponse:

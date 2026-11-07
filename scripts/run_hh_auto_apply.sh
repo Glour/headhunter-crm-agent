@@ -115,5 +115,7 @@ if [[ "$blocked_live_send" == "1" ]]; then
   echo "HH auto-apply: live send blocked (--send); set HH_AUTO_APPLY_SEND=1 and HH_AUTO_APPLY_ALLOW_LIVE_SEND=1" >&2
 fi
 
-cmd+=("${caller_args[@]}")
+if [[ ${caller_args[0]+set} == set ]]; then
+  cmd+=("${caller_args[@]}")
+fi
 exec "${cmd[@]}"

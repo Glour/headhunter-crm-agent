@@ -8,7 +8,12 @@ from app.cli import (
     _is_configured_hh_telegram_chat_id,
     build_parser,
 )
-from app.hh_chat import ExternalHandoffAlert, ExternalTarget, HHChatRunResult, PreparedExternalResponse
+from app.hh_chat import (
+    ExternalHandoffAlert,
+    ExternalTarget,
+    HHChatRunResult,
+    PreparedExternalResponse,
+)
 from app.repository import CRMRepository
 from app.scoring import ScoreResult, Vacancy
 

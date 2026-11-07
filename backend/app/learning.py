@@ -3,7 +3,6 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass, field
 
-
 POSITIVE_EVENTS = {"approved", "sent", "reply", "interview", "offer"}
 NEGATIVE_EVENTS = {"rejected", "archived", "not_interested", "discard"}
 CANONICAL_TERMS = [

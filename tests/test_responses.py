@@ -2,18 +2,18 @@ import re
 
 from app.config import default_applicant_profile
 from app.responses import (
+    LEGACY_REPEATED_TEMPLATE_PHRASES,
     ApplicantProfile,
     CaseStudy,
-    LEGACY_REPEATED_TEMPLATE_PHRASES,
     ResponseContext,
     _best_cases,
+    _important_requirements,
+    _proof_case_titles,
+    _requirement_focus_terms,
     check_cover_letter_quality,
     generate_cover_letter,
     load_cover_letter_methodology,
     sanitize_cover_letter_greeting,
-    _important_requirements,
-    _proof_case_titles,
-    _requirement_focus_terms,
 )
 from app.scoring import Vacancy
 
