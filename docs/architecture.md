@@ -7,7 +7,7 @@ HeadHunter CRM collects vacancy information, scores it against a candidate profi
 1. A search client retrieves vacancies and converts them to the `Vacancy` model.
 2. `score_vacancy()` produces a deterministic score, decision, reasons and penalties.
 3. `CRMRepository` stores vacancies and their scores in SQLite. It records applications, feedback and learning signals separately.
-4. The application service creates a draft when it passes the configured thresholds and duplicate checks. Generation providers are optional and have explicit configuration.
+4. The application service creates a draft when it passes the configured thresholds and duplicate checks.
 5. FastAPI exposes the CRM data to the React dashboard. Browser-based workflows and Telegram review are separate entry points.
 
 The score is a prioritization aid, not a guarantee of suitability. Profile settings and feedback affect ranking. A failed or uncertain external interaction should be reviewed before taking another action.
@@ -27,4 +27,4 @@ External actions are configured separately from drafting. Live scripts use expli
 
 ## Storage and API
 
-SQLite stores vacancies, applications, feedback, learning signals, run logs and interaction records. The production API includes `/api/dashboard`, `/api/vacancies`, `/api/agent/run` and `/api/feedback`; The standalone demo exposes only `/` and `/api/vacancies` and removes its database on shutdown.
+SQLite stores vacancies, applications, feedback, learning signals, run logs and interaction records. The production API includes `/api/dashboard`, `/api/vacancies`, `/api/agent/run` and `/api/feedback`. The standalone demo exposes `/` and `/api/vacancies` and removes its database on shutdown.
